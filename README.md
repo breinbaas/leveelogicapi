@@ -10,6 +10,14 @@
 
 ```mongosh```
 
+```use cpts```
+
+```show collections```
+
+```db.cpt_collection.drop()```
+
+```exit```
+
 
 ## INITIAL DO SETUP
 

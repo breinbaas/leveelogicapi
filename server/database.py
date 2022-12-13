@@ -15,6 +15,14 @@ def cpt_helper(cpt) -> dict:
         "id": str(cpt["_id"]),
         "lat": cpt["lat"],
         "lon": cpt["lon"],
+        "top": cpt["top"],
+        "bottom": cpt["bottom"],
+        "pre_excavated_depth": cpt["pre_excavated_depth"],
+        "zs": cpt["zs"],
+        "qc": cpt["qc"],
+        "fs": cpt["fs"],
+        "fr": cpt["fr"],
+        "u2": cpt["u2"],
     }
 
 
