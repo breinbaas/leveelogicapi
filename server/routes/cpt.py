@@ -1,5 +1,9 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, UploadFile
 from fastapi.encoders import jsonable_encoder
+from pathlib import Path
+
+from leveelogic.objects.cpt import Cpt
+
 
 from server.database import (
     create_cpt,
@@ -25,6 +29,45 @@ router = APIRouter()
 async def create_cpt_data(cpt: CptSchema = Body(...)):
     cpt = jsonable_encoder(cpt)
     new_cpt = await create_cpt(cpt)
+    return ResponseModel(new_cpt, "Cpt added successfully.")
+
+
+@router.post("/upload/", response_description="Cpt data uploaded into the database")
+async def create_upload_file(file: UploadFile):
+    # get the prefix of the file, we only accept .gef and .xml
+    suffix = Path(file.filename).suffix.lower()
+    if not suffix in [".gef", ".xml"]:
+        return ErrorResponseModel(
+            "An error occurred.", 404, "Can only handle .gef or .xml cpts"
+        )
+
+    contents = await file.read()
+
+    # try to make a cpt from the data
+    try:
+        cpt_string = contents.decode(errors="ignore")
+        cpt = Cpt.from_string(cpt_string, suffix)
+    except Exception as e:
+        return ErrorResponseModel(
+            f"An error occurred.", 404, "Error reading cpt; '{e}'"
+        )
+
+    # done, create a cpt schema to add to the database
+    cpt_schema = CptSchema(
+        name=cpt.name,
+        lat=cpt.lat,  # cpt.lat
+        lon=cpt.lon,  # cpt.lon
+        top=cpt.top,
+        bottom=cpt.bottom,
+        pre_excavated_depth=cpt.pre_excavated_depth,
+        zs=[round(z, 3) for z in cpt.z],
+        qc=[round(z, 3) for z in cpt.qc],
+        fs=[round(z, 5) for z in cpt.fs],
+        fr=[round(z, 3) for z in cpt.fr],
+        u2=[round(z, 5) for z in cpt.u],
+    )
+    cpt_schema = jsonable_encoder(cpt_schema)
+    new_cpt = await create_cpt(cpt_schema)
     return ResponseModel(new_cpt, "Cpt added successfully.")
 
 
