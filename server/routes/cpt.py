@@ -42,8 +42,6 @@ async def upload_file_to_cpt(file: UploadFile):
 
 
 async def cpt_schema_to_cpt(cpt_schema: CptSchema) -> Cpt:
-    print(cpt_schema["lat"])
-    print(cpt_schema["lon"])
     cpt = Cpt(
         name=cpt_schema["name"],
         top=cpt_schema["top"],
