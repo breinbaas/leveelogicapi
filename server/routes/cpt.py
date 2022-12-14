@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, UploadFile
 from fastapi.encoders import jsonable_encoder
 from pathlib import Path
 
-from leveelogic.objects.cpt import Cpt
+from leveelogic.objects.cpt import Cpt, CptConversionMethod
 
 
 from server.database import (
@@ -24,6 +24,42 @@ from server.models.general import (
 
 router = APIRouter()
 
+# HELPER FUNCTIONS
+async def upload_file_to_cpt(file: UploadFile):
+    # get the prefix of the file, we only accept .gef and .xml
+    suffix = Path(file.filename).suffix.lower()
+    if not suffix in [".gef", ".xml"]:
+        raise ValueError(f"Can only handle .gef or .xml cpts")
+
+    # try to make a cpt from the data
+    contents = await file.read()
+    try:
+        cpt_string = contents.decode(errors="ignore")
+        cpt = Cpt.from_string(cpt_string, suffix)
+    except Exception as e:
+        raise ValueError(f"Error reading Cpt file; {str(e)}")
+    return cpt
+
+
+async def cpt_schema_to_cpt(cpt_schema: CptSchema) -> Cpt:
+    print(cpt_schema["lat"])
+    print(cpt_schema["lon"])
+    cpt = Cpt(
+        name=cpt_schema["name"],
+        top=cpt_schema["top"],
+        bottom=cpt_schema["bottom"],
+        length=cpt_schema["top"] - cpt_schema["bottom"],  # TODO > property maken
+        pre_excavated_depth=cpt_schema["pre_excavated_depth"],
+        z=cpt_schema["zs"],
+        qc=cpt_schema["qc"],
+        fs=cpt_schema["fs"],
+        fr=cpt_schema["fr"],
+        u=cpt_schema["u2"],
+    )
+    cpt.latlon = cpt_schema["lat"], cpt_schema["lon"]
+    return cpt
+
+
 # CREATE
 @router.post("/", response_description="Cpt data added into the database")
 async def create_cpt_data(cpt: CptSchema = Body(...)):
@@ -34,23 +70,10 @@ async def create_cpt_data(cpt: CptSchema = Body(...)):
 
 @router.post("/upload/", response_description="Cpt data uploaded into the database")
 async def create_upload_file(file: UploadFile):
-    # get the prefix of the file, we only accept .gef and .xml
-    suffix = Path(file.filename).suffix.lower()
-    if not suffix in [".gef", ".xml"]:
-        return ErrorResponseModel(
-            "An error occurred.", 404, "Can only handle .gef or .xml cpts"
-        )
-
-    contents = await file.read()
-
-    # try to make a cpt from the data
     try:
-        cpt_string = contents.decode(errors="ignore")
-        cpt = Cpt.from_string(cpt_string, suffix)
+        cpt = await upload_file_to_cpt(file)
     except Exception as e:
-        return ErrorResponseModel(
-            f"An error occurred.", 404, "Error reading cpt; '{e}'"
-        )
+        return ErrorResponseModel("An error occurred.", 404, str(e))
 
     # done, create a cpt schema to add to the database
     cpt_schema = CptSchema(
@@ -118,4 +141,55 @@ async def delete_cpt_data(id: str):
         return ResponseModel(f"Cpt with ID: {id} removed", "Cpt deleted successfully")
     return ErrorResponseModel(
         "An error occurred", 404, f"Cpt with id {id} doesn't exist"
+    )
+
+
+# CLASSIFICATION FROM DATABASE
+@router.post(
+    "/classify/{id}",
+    response_description="Robertson classification of Cpt from database",
+)
+async def classify_from_database_id(
+    id: str,
+    minimum_layer_height: float = 0.2,
+    peat_friction_ratio: float = 6.0,
+):
+    try:
+        cpt_schema = await retrieve_cpt(id)
+    except Exception as e:
+        return ErrorResponseModel("An error occurred.", 404, str(e))
+
+    if cpt_schema:
+        cpt = await cpt_schema_to_cpt(cpt_schema)
+        sp1 = cpt.to_soilprofile1(
+            CptConversionMethod.ROBERTSON, minimum_layer_height, peat_friction_ratio
+        )
+        return ResponseModel(
+            [layer.dict() for layer in sp1.soillayers],
+            "Cpt converted to soillayers using Robertson",
+        )
+
+    return ErrorResponseModel("An error occurred.", 404, "Cpt doesn't exist.")
+
+
+# CLASSIFICATION FROM UPLOAD
+@router.post(
+    "/classify/", response_description="Robertson classification of uploaded Cpt data"
+)
+async def classify_from_upload(
+    file: UploadFile,
+    minimum_layer_height: float = 0.2,
+    peat_friction_ratio: float = 6.0,
+):
+    try:
+        cpt = await upload_file_to_cpt(file)
+    except Exception as e:
+        return ErrorResponseModel("An error occurred.", 404, str(e))
+
+    sp1 = cpt.to_soilprofile1(
+        CptConversionMethod.ROBERTSON, minimum_layer_height, peat_friction_ratio
+    )
+    return ResponseModel(
+        [layer.dict() for layer in sp1.soillayers],
+        "Cpt converted to soillayers using Robertson",
     )
