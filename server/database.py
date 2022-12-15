@@ -13,6 +13,7 @@ cpt_collection = database.get_collection("cpt_collection")
 def cpt_helper(cpt) -> dict:
     return {
         "id": str(cpt["_id"]),
+        "name": cpt["name"],
         "lat": cpt["lat"],
         "lon": cpt["lon"],
         "top": cpt["top"],

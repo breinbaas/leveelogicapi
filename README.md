@@ -1,5 +1,11 @@
 ## FAST
 
+### restart after reboot
+
+```systemctl start mongod.service```
+
+```sudo systemctl daemon-reload && sudo systemctl restart gunicorn && sudo systemctl restart nginx```
+
 ### restart server after api changes
 
 ```sudo systemctl daemon-reload && sudo systemctl restart gunicorn && sudo systemctl restart nginx```
@@ -95,6 +101,15 @@ Command to check if you can start the service;
 ```sudo systemctl restart gunicorn```
 
 ### Debugging 
+
+Useful flow;
+
+```
+sudo systemctl restart gunicorn.socket
+sudo systemctl status gunicorn.socket
+curl --unix-socket /run/gunicorn.sock localhost
+sudo journalctl -u gunicorn 
+```
 
 Find errors using;
 

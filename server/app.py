@@ -1,13 +1,17 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware 
+from fastapi.middleware.cors import CORSMiddleware
 
+import sys
+
+if not "/home/breinbaas/leveelogic" in sys.path:
+    sys.path.append("/home/breinbaas/leveelogic")
 
 from server.routes.cpt import router as CptRouter
 
-app = FastAPI() 
+app = FastAPI()
 app.include_router(CptRouter, tags=["Cpt"], prefix="/cpt")
 
-origins = ['*']
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,10 +19,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-) 
+)
+
 
 @app.get("/")
 async def root():
-    return {"message": "Hello from Fastapi"} 
-
-
+    return {"message": "Hello from Fastapi"}
