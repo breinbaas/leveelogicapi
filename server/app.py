@@ -7,9 +7,12 @@ if not "/home/breinbaas/leveelogic" in sys.path:
     sys.path.append("/home/breinbaas/leveelogic")
 
 from server.routes.cpt import router as CptRouter
+from server.routes.bishop import router as BishopRouter
 
 app = FastAPI()
+app.include_router(BishopRouter, tags=["Bishop"], prefix="/bishop")
 app.include_router(CptRouter, tags=["Cpt"], prefix="/cpt")
+
 
 origins = ["*"]
 
