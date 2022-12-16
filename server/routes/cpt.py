@@ -4,6 +4,8 @@ from pathlib import Path
 
 from leveelogic.objects.cpt import Cpt, CptConversionMethod
 
+from ..const import ALLOWED_LOCATIONS
+
 
 from server.database import (
     create_cpt,
@@ -25,7 +27,7 @@ from server.models.general import (
 router = APIRouter()
 
 # HELPER FUNCTIONS
-async def upload_file_to_cpt(file: UploadFile):
+async def upload_file_to_cpt(file: UploadFile) -> Cpt:
     # get the prefix of the file, we only accept .gef and .xml
     suffix = Path(file.filename).suffix.lower()
     if not suffix in [".gef", ".xml"]:
@@ -44,9 +46,9 @@ async def upload_file_to_cpt(file: UploadFile):
 async def cpt_schema_to_cpt(cpt_schema: CptSchema) -> Cpt:
     cpt = Cpt(
         name=cpt_schema["name"],
+        startdate=cpt_schema["date"],
         top=cpt_schema["top"],
         bottom=cpt_schema["bottom"],
-        length=cpt_schema["top"] - cpt_schema["bottom"],  # TODO > property maken
         pre_excavated_depth=cpt_schema["pre_excavated_depth"],
         z=cpt_schema["zs"],
         qc=cpt_schema["qc"],
@@ -62,12 +64,27 @@ async def cpt_schema_to_cpt(cpt_schema: CptSchema) -> Cpt:
 @router.post("/", response_description="Cpt data added into the database")
 async def create_cpt_data(cpt: CptSchema = Body(...)):
     cpt = jsonable_encoder(cpt)
+
+    if cpt["location"] not in ALLOWED_LOCATIONS:
+        return ErrorResponseModel(
+            "An error occurred.",
+            404,
+            f"Unsupported location '{cpt['location']}' found (options are 'crest', 'polder', 'both')",
+        )
+
     new_cpt = await create_cpt(cpt)
     return ResponseModel(new_cpt, "Cpt added successfully.")
 
 
 @router.post("/upload/", response_description="Cpt data uploaded into the database")
-async def create_upload_file(file: UploadFile):
+async def create_upload_file(file: UploadFile, location: str = "both"):
+    if location not in ALLOWED_LOCATIONS:
+        return ErrorResponseModel(
+            "An error occurred.",
+            404,
+            f"Unsupported location '{location}' found (options are 'crest', 'polder', 'both')",
+        )
+
     try:
         cpt = await upload_file_to_cpt(file)
     except Exception as e:
@@ -76,6 +93,8 @@ async def create_upload_file(file: UploadFile):
     # done, create a cpt schema to add to the database
     cpt_schema = CptSchema(
         name=cpt.name,
+        date=cpt.date,
+        location=location,
         lat=cpt.lat,  # cpt.lat
         lon=cpt.lon,  # cpt.lon
         top=cpt.top,
@@ -116,6 +135,15 @@ async def get_cpt_data(id):
 @router.put("/{id}")
 async def update_cpt_data(id: str, req: UpdateCptModel = Body(...)):
     req = {k: v for k, v in req.dict().items() if v is not None}
+
+    if "location" in req.keys():
+        if not req["location"] in ALLOWED_LOCATIONS:
+            return ErrorResponseModel(
+                "An error occurred.",
+                404,
+                f"Unsupported location '{req['location']}' found (options are 'crest', 'polder', 'both')",
+            )
+
     try:
         updated_cpt = await update_cpt(id, req)
     except Exception as e:

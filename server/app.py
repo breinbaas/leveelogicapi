@@ -8,9 +8,11 @@ if not "/home/breinbaas/leveelogic" in sys.path:
 
 from server.routes.cpt import router as CptRouter
 from server.routes.bishop import router as BishopRouter
+from server.routes.borehole import router as BoreholeRouter
 
 app = FastAPI()
 app.include_router(BishopRouter, tags=["Bishop"], prefix="/bishop")
+app.include_router(BoreholeRouter, tags=["Borehole"], prefix="/borehole")
 app.include_router(CptRouter, tags=["Cpt"], prefix="/cpt")
 
 

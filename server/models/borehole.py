@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from leveelogic.objects.soillayer import SoilLayer
 
 
-class CptSchema(BaseModel):
+class BoreholeSchema(BaseModel):
     name: str = Field(...)
     date: str = Field(...)
     location: str = Field(...)
@@ -10,34 +11,24 @@ class CptSchema(BaseModel):
     lon: float = Field(..., ge=0.0, le=90.0)
     top: float = Field(...)
     bottom: float = Field(...)
-    pre_excavated_depth: float = Field(..., ge=0.0)
-    zs: List[float] = Field(...)
-    qc: List[float] = Field(...)
-    fs: List[float] = Field(...)
-    fr: List[float] = Field(...)
-    u2: List[float] = Field(...)
+    soillayers: List[SoilLayer] = Field(...)
 
     class Config:
         schema_extra = {
             "example": {
-                "name": "Cpt",
+                "name": "Borehole",
                 "date": "19700101",
                 "location": "both",  # can be crest | slope | polder | both
                 "lat": 52.37,
                 "lon": 4.90,
                 "top": 0.0,
                 "bottom": 0.0,
-                "pre_excavated_depth": 0.0,
-                "zs": [],
-                "qc": [],
-                "fs": [],
-                "fr": [],
-                "u2": [],
+                "soillayers": [],
             }
         }
 
 
-class UpdateCptModel(BaseModel):
+class UpdateBoreholeModel(BaseModel):
     name: Optional[str]
     date: Optional[str]
     location: Optional[str]
@@ -47,7 +38,7 @@ class UpdateCptModel(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "Cpt",
+                "name": "Borehole",
                 "date": "19700101",
                 "location": "both",  # can be crest | slope | polder | both
                 "lat": 52.37,
