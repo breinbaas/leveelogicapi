@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Body, UploadFile
 from fastapi.encoders import jsonable_encoder
 from pathlib import Path
+from io import BytesIO
+from starlette.responses import StreamingResponse
 
 from leveelogic.objects.borehole import Borehole
 from leveelogic.objects.soillayer import SoilLayer
@@ -166,3 +168,21 @@ async def delete_borehole_data(id: str):
     return ErrorResponseModel(
         "An error occurred", 404, f"Borehole with id {id} doesn't exist"
     )
+
+# PLOT FROM UPLOAD
+@router.post(
+    "/plot/", response_description="Plot of the uploaded Borehole data with the Robertson correlation"
+)
+async def plot_from_upload(
+    file: UploadFile,    
+):
+    try:
+        borehole = await upload_file_to_borehole(file)
+        fig = borehole.plot()
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        buf.seek(0)
+    except Exception as e:
+        return ErrorResponseModel("An error occurred.", 404, str(e))
+
+    return StreamingResponse(buf, media_type="image/png")
