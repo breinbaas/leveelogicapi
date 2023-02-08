@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Body, UploadFile
 from fastapi.encoders import jsonable_encoder
 from pathlib import Path
+from io import BytesIO
+from starlette.responses import StreamingResponse
 
 from leveelogic.objects.cpt import Cpt, CptConversionMethod
 
 from ..const import ALLOWED_LOCATIONS
+
 
 
 from server.database import (
@@ -219,3 +222,28 @@ async def classify_from_upload(
         [layer.dict() for layer in sp1.soillayers],
         "Cpt converted to soillayers using Robertson",
     )
+
+# PLOT FROM UPLOAD
+@router.post(
+    "/plot/", response_description="Plot of the uploaded Cpt data with the Robertson correlation"
+)
+async def plot_from_upload(
+    file: UploadFile,
+    minimum_layer_height: float = 0.2,
+    peat_friction_ratio: float = 6.0,
+):
+    try:
+        cpt = await upload_file_to_cpt(file)
+        fig = cpt.plot(
+            cptconversionmethod=CptConversionMethod.ROBERTSON, 
+            minimum_layerheight=minimum_layer_height, 
+            peat_friction_ratio=peat_friction_ratio,
+        )
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        buf.seek(0)
+    except Exception as e:
+        return ErrorResponseModel("An error occurred.", 404, str(e))
+    
+    
+    return StreamingResponse(buf, media_type="image/png")
