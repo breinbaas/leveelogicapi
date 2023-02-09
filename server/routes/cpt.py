@@ -4,6 +4,7 @@ from pathlib import Path
 from io import BytesIO
 from starlette.responses import StreamingResponse
 import requests
+import base64
 
 from leveelogic.objects.cpt import Cpt, CptConversionMethod
 
@@ -253,7 +254,7 @@ async def plot_from_upload(
 # PLOT FROM PECTO URL
 @router.post(
     "/plot_from_url/",
-    response_description="Plot of the Cpt data with the Robertson correlation from a given URL",
+    response_description="base64 string for the plot of the Cpt data with the Robertson correlation from a given URL",
 )
 async def plot_from_url(
     url: str,
@@ -273,7 +274,10 @@ async def plot_from_url(
         buf = BytesIO()
         fig.savefig(buf, format="png")
         buf.seek(0)
+        base64png = base64.b64encode(buf.read()).decode()
+
     except Exception as e:
         return ErrorResponseModel("An error occurred.", 404, str(e))
 
-    return StreamingResponse(buf, media_type="image/png")
+    # return StreamingResponse(buf, media_type="image/png")
+    return base64png
