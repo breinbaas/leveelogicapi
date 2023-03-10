@@ -251,6 +251,10 @@ async def plot_from_upload(
     return StreamingResponse(buf, media_type="image/png")
 
 
+#########
+# PECTO #
+#########
+
 # PLOT FROM PECTO URL
 @router.post(
     "/plot_from_url/",
@@ -281,3 +285,30 @@ async def plot_from_url(
 
     # return StreamingResponse(buf, media_type="image/png")
     return base64png
+
+
+# CLASSIFY FROM PECTO URL
+@router.post(
+    "/classify_from_url/",
+    response_description="Robertson classification of Cpt data",
+)
+async def classify_from_url(
+    url: str,
+    minimum_layer_height: float = 0.2,
+    peat_friction_ratio: float = 6.0,
+):
+    try:
+        response = requests.get(url)
+        data = response.text
+        cpt = Cpt.from_string(data, ".gef")
+        sp1 = cpt.to_soilprofile1(
+            CptConversionMethod.ROBERTSON, minimum_layer_height, peat_friction_ratio
+        )
+
+    except Exception as e:
+        return ErrorResponseModel("An error occurred.", 404, str(e))
+
+    return ResponseModel(
+        [layer.dict() for layer in sp1.soillayers],
+        "Cpt converted to soillayers using Robertson",
+    )
