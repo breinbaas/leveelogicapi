@@ -4,3 +4,4 @@ gunicorn==20.1.0
 passlib[bcrypt]
 pyjwt
 leveelogic
+python-dotenv
