@@ -26,21 +26,21 @@ USERROLES = {
 }
 
 
-# def create_db_connection():
-#     conn = sqlite3.connect(DATABASE_NAME)
-#     conn.execute(
-#         """CREATE TABLE if not exists Users
-#             (
-#                 id INTEGER PRIMARY KEY AUTOINCREMENT,                
-#                 name TEXT NOT NULL,
-#                 email TEXT NOT NULL,
-#                 password TEXT NOT NULL,
-#                 role CHAR(10) NOT NULL,
-#                 disabled BOOL NOT NULL
-#             );
-#         """
-#     )
-#     conn.close()
+def create_db_connection():
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute(
+        """CREATE TABLE if not exists Users
+            (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,                
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                password TEXT NOT NULL,
+                role CHAR(10) NOT NULL,
+                disabled BOOL NOT NULL
+            );
+        """
+    )
+    conn.close()
 
 
 def add_user(user: User, password: str, role: UserRole = UserRole.VIEW):
@@ -73,7 +73,7 @@ def get_and_validate_user(email: str, password: str):
             return None
 
 
-def get_user_by_email(email: str):
+def get_user_by_name(email: str):
     sql = f"SELECT name, password, role, disabled from Users WHERE email='{email}' LIMIT 1"
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.execute(sql)

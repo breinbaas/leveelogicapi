@@ -13,8 +13,8 @@ from .database import (
     add_user,
     get_and_validate_user,
     User,
-    #create_db_connection,
-    get_user_by_email,
+    create_db_connection,
+    get_user_by_name,
 )
 
 
@@ -23,16 +23,19 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
 
+create_db_connection()
 
-#create_db_connection()
-
-# add_user(
-#     user=User(email="breinbaasnl@gmail.com", name="Rob van Putten"),
-#     password="secret",
-# )
-
-# get_user(email="breinbaasnl@gmail.com", password="secret")
+if get_user_by_name(USER) is None:
+    add_user(
+        user=User(
+            email=USER, 
+            name="Rob van Putten"
+        ),
+    password=PASSWORD,
+)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -69,7 +72,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(email=email)
     except InvalidTokenError:
         raise credentials_exception
-    user = get_user_by_email(email=token_data.email)
+    user = get_user_by_name(email=token_data.email)
     if user is None:
         raise credentials_exception
     return user
