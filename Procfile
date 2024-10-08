@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath app --worker-tmp-dir /dev/shm --config gunicorn.config.py app.main:app
+web: gunicorn --chdir app --worker-tmp-dir /dev/shm --config gunicorn.config.py app.main:app
