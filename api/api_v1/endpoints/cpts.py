@@ -16,7 +16,10 @@ async def pong(
 
 
 @router.post("/to_json")
-async def cpt_to_json(file: UploadFile):
+async def cpt_to_json(
+    file: UploadFile,
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
     contents = await file.read()
     suffix = Path(file.filename).suffix.lower()
     try:
