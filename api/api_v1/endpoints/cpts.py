@@ -24,7 +24,7 @@ async def cpt_to_json(
     contents = await file.read()
     try:
         s_utf8 = contents.decode("utf-8", errors="ignore")
-        cpt = Cpt.from_string(s_utf8, suffix=suffix)
+        cpt = Cpt.from_string(s_utf8, suffix=suffix.lower())
         return cpt
     except Exception as e:
         raise HTTPException(
