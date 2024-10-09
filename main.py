@@ -24,14 +24,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-USER = os.getenv("USER")
+USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
+
+print(USERNAME)
+print(PASSWORD)
 
 create_db_connection()
 
-if get_user_by_name(USER) is None:
+if get_user_by_name(USERNAME) is None:
     add_user(
-        user=User(email=USER, name="Rob van Putten"),
+        user=User(email=USERNAME, name="Rob van Putten"),
         password=PASSWORD,
     )
 
