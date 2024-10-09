@@ -10,32 +10,18 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from .database import (
-    add_user,
     get_and_validate_user,
     User,
-    create_db_connection,
     get_user_by_name,
 )
 
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-USER = os.getenv("USER")
-PASSWORD = os.getenv("PASSWORD")
-
-create_db_connection()
-
-if get_user_by_name(USER) is None:
-    add_user(
-        user=User(
-            email=USER, 
-            name="Rob van Putten"
-        ),
-    password=PASSWORD,
-)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

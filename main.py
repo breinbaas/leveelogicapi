@@ -4,6 +4,7 @@ from typing import Annotated
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
+import os
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
@@ -13,10 +14,26 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.api_v1.api import router as api_v1_router
 from settings import ACCESS_TOKEN_EXPIRE_MINUTES
 from api.security import Token, authenticate_user, create_access_token
+from api.database import create_db_connection, add_user, get_user_by_name, User
 
 log = logging.getLogger("uvicorn")
 
 origins = ["*"]
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+
+create_db_connection()
+
+if get_user_by_name(USER) is None:
+    add_user(
+        user=User(email=USER, name="Rob van Putten"),
+        password=PASSWORD,
+    )
 
 
 @asynccontextmanager
