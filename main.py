@@ -18,14 +18,14 @@ log = logging.getLogger("uvicorn")
 
 origins = ["*"]
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Load the ML model
-    log.info("Starting up...")
-    yield
-    log.info("Shutting down...")
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     # Load the ML model
+#     log.info("Starting up...")
+#     yield
+#     log.info("Shutting down...")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 app.include_router(api_v1_router, prefix="/api/v1")
 app.add_middleware(
     CORSMiddleware,
@@ -35,9 +35,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
 
 @app.post("/token")
 async def login_for_access_token(
@@ -56,5 +58,6 @@ async def login_for_access_token(
     )
     return Token(access_token=access_token, token_type="bearer")
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     uvicorn.run("main:app", port=8000, reload=True)
