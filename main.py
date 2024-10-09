@@ -27,9 +27,6 @@ load_dotenv()
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
-print(USERNAME)
-print(PASSWORD)
-
 create_db_connection()
 
 if get_user_by_name(USERNAME) is None:
