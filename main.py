@@ -18,12 +18,14 @@ log = logging.getLogger("uvicorn")
 
 origins = ["*"]
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     # Load the ML model
-#     log.info("Starting up...")
-#     yield
-#     log.info("Shutting down...")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
+    log.info("Starting up...")
+    yield
+    log.info("Shutting down...")
+
 
 app = FastAPI()
 app.include_router(api_v1_router, prefix="/api/v1")
