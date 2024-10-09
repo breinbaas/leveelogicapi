@@ -18,10 +18,10 @@ async def pong(
 @router.post("/to_json")
 async def cpt_to_json(
     file: UploadFile,
+    suffix: str,
     # current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     contents = await file.read()
-    suffix = Path(file.filename).suffix.lower()
     try:
         s_utf8 = contents.decode("utf-8", errors="ignore")
         cpt = Cpt.from_string(s_utf8, suffix=suffix)
