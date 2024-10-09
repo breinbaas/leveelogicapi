@@ -27,4 +27,6 @@ async def cpt_to_json(
         cpt = Cpt.from_string(s_utf8, suffix=suffix)
         return cpt
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error reading file '{e}'")
+        raise HTTPException(
+            status_code=400, detail=f"Error reading file '{e}', suffix='{suffix}'"
+        )
