@@ -22,7 +22,6 @@ async def cpt_to_json(
     # current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     contents = await file.read()
-    suffix = f".{suffix}"
     try:
         s_utf8 = contents.decode("utf-8", errors="ignore")
         cpt = Cpt.from_string(s_utf8, suffix=suffix)
