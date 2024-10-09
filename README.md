@@ -19,5 +19,7 @@
 * create the .env file with SECRET_KEY, ALGORITHM, USER, PASSWORD
 * ```bash release.sh```
 
+(OUDE IP 159.89.13.116)
+
 
 
