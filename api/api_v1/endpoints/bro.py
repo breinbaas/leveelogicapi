@@ -21,6 +21,15 @@ class CptsAlongLatLonLineResponse(BaseModel):
     cpts: List[Cpt] = []
 
 
+class CptMetadatasAlongLatLonLineRequest(BaseModel):
+    points: List[Tuple[float, float]] = []
+    exclude_ids: List[str] = []
+
+
+class CptMetadatasAlongLatLonLineResponse(BaseModel):
+    bro_ids: List[str] = []
+
+
 @router.post("/cpts_along_latlon_line")
 async def cpts_along_latlon_line(
     input: CptsAlongLatLonLineRequest,
@@ -44,7 +53,7 @@ async def cpts_along_latlon_line(
 
 @router.post("/cpt_metadatas_along_latlon_line")
 async def cpt_metadatas_along_latlon_line(
-    input: CptsAlongLatLonLineRequest,
+    input: CptMetadatasAlongLatLonLineRequest,
     # current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     api = BROAPI()
@@ -52,13 +61,9 @@ async def cpt_metadatas_along_latlon_line(
         cpt_mds = api.get_cpts_meta_data_along_line_latlon(
             points=input.points, exclude_bro_ids=input.exclude_ids
         )
-        print(cpt_mds)
-        # return CptsAlongLatLonLineResponse(
-        #     cpt_strings=cpt_strings,
-        #     cpts=cpts,
-        # )
+        return CptMetadatasAlongLatLonLineResponse(bro_ids=[c.bro_id for c in cpt_mds])
     except Exception as e:
         raise HTTPException(
             status_code=400,
-            detail=f"Error getting BRO cpts; '{e}'",
+            detail=f"Error getting BRO cpts ids; '{e}'",
         )
