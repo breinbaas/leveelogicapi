@@ -44,6 +44,8 @@ class CptMetadatasAlongXYLineResponse(BaseModel):
 
 class CptFromBRORequest(BaseModel):
     bro_id: str
+    minimum_layerheight: float = 0.2
+    peat_friction_ratio: float = 5.0
 
 
 class CptFromBROResponse(BaseModel):
