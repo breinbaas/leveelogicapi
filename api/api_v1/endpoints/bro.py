@@ -5,6 +5,8 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from leveelogic.api.bro_api import BROAPI
+from leveelogic.objects.soilprofile import SoilProfile
+from leveelogic.objects.cpt import CptInterpretationMethod
 
 from ...security import User, get_current_active_user
 
@@ -47,6 +49,7 @@ class CptFromBRORequest(BaseModel):
 class CptFromBROResponse(BaseModel):
     cpt_string: str
     cpt: Cpt
+    cpt_interpretation: SoilProfile
 
 
 @router.post("/cpts_along_latlon_line")
@@ -116,7 +119,14 @@ async def cpt_from_bro_id(
     api = BROAPI()
     try:
         cpt_string, cpt = api.get_cpt_from_bro_id(bro_id=input.bro_id)
-        return CptFromBROResponse(cpt_string=cpt_string, cpt=cpt)
+        cpt_interpretation = cpt.to_soilprofile(
+            cpt_interpretation_method=CptInterpretationMethod.ROBERTSON,
+            minimum_layerheight=0.2,
+            peat_friction_ratio=5.0,
+        )
+        return CptFromBROResponse(
+            cpt_string=cpt_string, cpt=cpt, cpt_interpretation=cpt_interpretation
+        )
     except Exception as e:
         raise HTTPException(
             status_code=400,
