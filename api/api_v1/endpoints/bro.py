@@ -40,3 +40,25 @@ async def cpts_along_latlon_line(
             status_code=400,
             detail=f"Error getting BRO cpts; '{e}'",
         )
+
+
+@router.post("/cpt_metadatas_along_latlon_line")
+async def cpt_metadatas_along_latlon_line(
+    input: CptsAlongLatLonLineRequest,
+    # current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    api = BROAPI()
+    try:
+        cpt_mds = api.get_cpts_meta_data_along_line_latlon(
+            points=input.points, exclude_bro_ids=input.exclude_ids
+        )
+        print(cpt_mds)
+        # return CptsAlongLatLonLineResponse(
+        #     cpt_strings=cpt_strings,
+        #     cpts=cpts,
+        # )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error getting BRO cpts; '{e}'",
+        )
