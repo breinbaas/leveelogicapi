@@ -13,6 +13,7 @@ router = APIRouter()
 
 class CptsAlongLatLonLineRequest(BaseModel):
     points: List[Tuple[float, float]] = []
+    exclude_ids: List[str] = []
 
 
 class CptsAlongLatLonLineResponse(BaseModel):
@@ -27,7 +28,9 @@ async def cpts_along_latlon_line(
 ):
     api = BROAPI()
     try:
-        cpt_strings, cpts = api.get_cpts_along_line_latlon(input.points)
+        cpt_strings, cpts = api.get_cpts_along_line_latlon(
+            points=input.points, exclude_bro_ids=input.exclude_ids
+        )
         return CptsAlongLatLonLineResponse(
             cpt_strings=cpt_strings,
             cpts=cpts,
