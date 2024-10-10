@@ -39,6 +39,15 @@ class CptMetadatasAlongXYLineResponse(BaseModel):
     bro_ids: List[str] = []
 
 
+class CptFromBRORequest(BaseModel):
+    bro_id: str
+
+
+class CptFromBROResponse(BaseModel):
+    cpt_string: str
+    cpt: Cpt
+
+
 @router.post("/cpts_along_latlon_line")
 async def cpts_along_latlon_line(
     input: CptsAlongLatLonLineRequest,
@@ -93,4 +102,20 @@ async def cpt_metadatas_along_xy_line(
         raise HTTPException(
             status_code=400,
             detail=f"Error getting BRO cpts ids; '{e}'",
+        )
+
+
+@router.post("/cpt_from_bro_id")
+async def cpt_from_bro_id(
+    input: CptFromBRORequest,
+    # current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    api = BROAPI()
+    try:
+        cpt_string, cpt = api.get_cpt_from_bro_id(bro_id=input.bro_id)
+        return CptFromBROResponse(cpt_string=cpt_string, cpt=cpt)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error getting BRO cpt with id '{input.bro_id}'; '{e}'",
         )
