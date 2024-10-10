@@ -33,6 +33,7 @@ class CptMetadatasAlongLatLonLineResponse(BaseModel):
 class CptMetadatasAlongXYLineRequest(BaseModel):
     points: List[Tuple[float, float]] = []
     exclude_ids: List[str] = []
+    max_distance: float = 25.0
 
 
 class CptMetadatasAlongXYLineResponse(BaseModel):
@@ -95,7 +96,9 @@ async def cpt_metadatas_along_xy_line(
     api = BROAPI()
     try:
         cpt_mds = api.get_cpts_meta_data_along_line_xy(
-            points=input.points, exclude_bro_ids=input.exclude_ids
+            points=input.points,
+            exclude_bro_ids=input.exclude_ids,
+            max_distance=input.max_distance,
         )
         return CptMetadatasAlongXYLineResponse(bro_ids=[c.bro_id for c in cpt_mds])
     except Exception as e:
